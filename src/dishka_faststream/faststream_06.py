@@ -18,15 +18,14 @@ from typing import (
     get_type_hints,
 )
 
+from dishka import AsyncContainer, Provider, Scope, from_context
+from dishka.integrations.base import InjectFunc, wrap_injection
 from faststream import BaseMiddleware, Context, FastStream
 from faststream._internal.basic_types import DecodedMessage
 from faststream._internal.broker import BrokerUsecase as BrokerType
 from faststream._internal.context import ContextRepo
 from faststream.asgi import AsgiFastStream
 from faststream.message import StreamMessage
-
-from dishka import AsyncContainer, Provider, Scope, from_context
-from dishka.integrations.base import InjectFunc, wrap_injection
 
 _ReturnT = TypeVar("_ReturnT")
 _ParamsP = ParamSpec("_ParamsP")
@@ -41,8 +40,10 @@ Application: TypeAlias = FastStream | AsgiFastStream
 
 try:
     # import works only if fastapi is installed
-    from faststream._internal.fastapi import Context as FastAPIContext
-    from faststream._internal.fastapi import StreamRouter
+    from faststream._internal.fastapi import (
+        Context as FastAPIContext,
+        StreamRouter,
+    )
 
 except ImportError:
     ContextAnnotation: TypeAlias = Annotated[ContextRepo, Context("context")]
@@ -106,12 +107,7 @@ def setup_dishka(
 
     if auto_inject is not False:
         inject_func: InjectFunc[_ParamsP, _ReturnT]
-
-        if auto_inject is True:
-            inject_func = inject
-        else:
-            inject_func = auto_inject
-
+        inject_func = inject if auto_inject is True else auto_inject
         broker.config.fd_config.call_decorators = (
             inject_func,
             *broker.config.fd_config.call_decorators,
@@ -150,7 +146,7 @@ class _DishkaMiddleware(BaseMiddleware):
         ) as request_container:
             with self.context.scope("dishka", request_container):
                 return cast(
-                    AsyncIterator[DecodedMessage],
+                    "AsyncIterator[DecodedMessage]",
                     await call_next(msg),
                 )
 

@@ -15,14 +15,13 @@ from typing import (
     cast,
 )
 
-from faststream import BaseMiddleware, FastStream, context
+from dishka import AsyncContainer, Provider, Scope, from_context
+from dishka.integrations.base import InjectFunc, wrap_injection
+from faststream import BaseMiddleware, FastStream, context  # type: ignore[attr-defined]
 from faststream.broker.core.usecase import BrokerUsecase as BrokerType
 from faststream.broker.message import StreamMessage
 from faststream.types import DecodedMessage
 from faststream.utils.context import ContextRepo
-
-from dishka import AsyncContainer, Provider, Scope, from_context
-from dishka.integrations.base import InjectFunc, wrap_injection
 
 _ReturnT = TypeVar("_ReturnT")
 _ParamsP = ParamSpec("_ParamsP")
@@ -38,7 +37,7 @@ try:
     from faststream.asgi import AsgiFastStream
 
 except ImportError:
-    Application: TypeAlias = FastStream  # type: ignore[no-redef,misc]
+    Application: TypeAlias = FastStream
 
 else:
     Application: TypeAlias = FastStream | AsgiFastStream  # type: ignore[no-redef,misc]
@@ -48,7 +47,7 @@ try:
 except ImportError:
     pass
 else:
-    Application |= StreamRouter  # type: ignore[assignment]
+    Application |= StreamRouter
 
 
 class ApplicationLike(Protocol):
@@ -63,8 +62,8 @@ def setup_dishka(
     finalize_container: bool = True,
     auto_inject: bool | InjectFunc[_ParamsP, _ReturnT] = False,
 ) -> None:
-    """
-    Setup dishka integration with FastStream.
+    """Setup dishka integration with FastStream.
+
     You must provide either app or broker.
 
     Args:
@@ -121,12 +120,7 @@ def setup_dishka(
 
     if auto_inject is not False:
         inject_func: InjectFunc[_ParamsP, _ReturnT]
-
-        if auto_inject is True:
-            inject_func = inject
-        else:
-            inject_func = auto_inject
-
+        inject_func = inject if auto_inject is True else auto_inject
         broker._call_decorators = (  # noqa: SLF001
             inject_func,
             *broker._call_decorators,  # noqa: SLF001
@@ -159,7 +153,7 @@ class _DishkaMiddleware(BaseMiddleware):
         self.container = container
         super().__init__(*args, **kwargs)
 
-    async def consume_scope(  # type: ignore[misc]
+    async def consume_scope(
         self,
         call_next: Callable[[Any], Awaitable[Any]],
         msg: StreamMessage[Any],
@@ -173,6 +167,6 @@ class _DishkaMiddleware(BaseMiddleware):
         ) as request_container:
             with context.scope("dishka", request_container):
                 return cast(
-                    AsyncIterator[DecodedMessage],
+                    "AsyncIterator[DecodedMessage]",
                     await call_next(msg),
                 )

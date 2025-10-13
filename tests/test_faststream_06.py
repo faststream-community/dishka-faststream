@@ -5,16 +5,17 @@ from typing import Any, ParamSpec, TypeVar
 from unittest.mock import Mock
 
 import pytest
+from dishka import make_async_container
+from dishka.integrations.base import InjectFunc
 from faststream import FastStream
 from faststream.nats import NatsBroker, TestNatsBroker
 
-from dishka import make_async_container
-from dishka.integrations.base import InjectFunc
 from dishka_faststream import (
     FromDishka,
     inject,
     setup_dishka,
 )
+
 from .common import (
     APP_DEP_VALUE,
     REQUEST_DEP_VALUE,
@@ -155,6 +156,7 @@ async def test_faststream_with_broker(app_provider: AppProvider) -> None:
         app_provider.request_released.assert_called_once()
 
     await container.close()
+
 
 async def handle_for_custom_inject(
     a: FromDishka[AppDep],

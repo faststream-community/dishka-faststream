@@ -1,9 +1,10 @@
 [run]
 parallel = True
 data_file = .coverage
-source = dishka_faststream
+source = src
 omit =
-    dishka_faststream/tests/*
+    tests/*
+    src/dishka_faststream/_version.py
 
 [report]
 show_missing = True

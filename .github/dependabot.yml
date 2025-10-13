@@ -12,6 +12,8 @@ updates:
 
   - package-ecosystem: uv
     directory: /
+    exclude-paths:
+      - "requirements/**"
     schedule:
       interval: weekly
     groups:

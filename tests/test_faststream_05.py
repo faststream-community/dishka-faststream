@@ -5,16 +5,17 @@ from typing import Any, ParamSpec, TypeVar
 from unittest.mock import Mock
 
 import pytest
+from dishka import make_async_container
+from dishka.integrations.base import InjectFunc
 from faststream import FastStream
 from faststream.nats import NatsBroker, TestNatsBroker
 
-from dishka import make_async_container
-from dishka.integrations.base import InjectFunc
 from dishka_faststream import (
     FromDishka,
     inject,
     setup_dishka,
 )
+
 from .common import (
     APP_DEP_VALUE,
     REQUEST_DEP_VALUE,
@@ -65,7 +66,7 @@ async def get_with_app(
     return "passed"
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_app_dependency(app_provider: AppProvider) -> None:
     async with dishka_app(get_with_app, app_provider) as client:
         assert await client.publish("", "test", rpc=True) == "passed"
@@ -83,7 +84,7 @@ async def get_with_request(
     return "passed"
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_request_dependency(app_provider: AppProvider) -> None:
     async with dishka_app(get_with_request, app_provider) as client:
         assert await client.publish("", "test", rpc=True) == "passed"
@@ -92,7 +93,7 @@ async def test_request_dependency(app_provider: AppProvider) -> None:
         app_provider.request_released.assert_called_once()
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_autoinject_before_subscriber(app_provider: AppProvider) -> None:
     broker = NatsBroker()
     app = FastStream(broker)
@@ -111,7 +112,7 @@ async def test_autoinject_before_subscriber(app_provider: AppProvider) -> None:
     await container.close()
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_autoinject_after_subscriber(app_provider: AppProvider) -> None:
     broker = NatsBroker()
     app = FastStream(broker)
@@ -130,7 +131,7 @@ async def test_autoinject_after_subscriber(app_provider: AppProvider) -> None:
     await container.close()
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_faststream_with_broker(app_provider: AppProvider) -> None:
     broker = NatsBroker()
     broker.subscriber("test")(get_with_request)
@@ -144,6 +145,7 @@ async def test_faststream_with_broker(app_provider: AppProvider) -> None:
         app_provider.request_released.assert_called_once()
 
     await container.close()
+
 
 async def handle_for_custom_inject(
     a: FromDishka[AppDep],

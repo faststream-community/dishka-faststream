@@ -1,0 +1,81 @@
+# Configuration file example:  https://docs.astral.sh/ruff/configuration/
+# All settings:                https://docs.astral.sh/ruff/settings/
+
+fix = true
+preview = true
+
+line-length = 90
+indent-width = 4
+
+target-version = "py310"
+
+include = [
+    "src/dishka_faststream/**/*.py",
+    "tests/**/*.py",
+    "pyproject.toml",
+]
+
+[format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = false
+
+[lint]
+select = [
+    "ALL",
+]
+
+ignore = [
+    "ANN401",
+
+    "PLC2701",  # private name import `_internal` from external module `faststream`
+
+    # Assign error message to variable
+    "EM101",
+    "EM102",
+
+    # # preview
+    "CPY",
+    "PLR6301",
+
+    # # FIXME pydocstyle
+    "D100",     # missing docstring in public module
+    "D101",
+    "D102",
+    "D103",
+    "D104",     # missing docstring in public package
+    "D105",     # missing docstring in magic methods
+    "D106",     # missing docstring in public nested class
+    "D107",     # missing docstring in __init__
+    "DOC201",
+    "DOC202",
+    "DOC402",
+    "DOC501",
+    "DOC502",
+]
+
+[lint.per-file-ignores]
+"tests/**/*.py" = [
+    "S",
+    "PLR0904",
+    "PLR0914",
+    "PLC1901",
+    "RUF045",
+    "RUF029",
+]
+
+[lint.isort]
+case-sensitive = true
+combine-as-imports = true
+force-wrap-aliases = true
+
+[lint.pydocstyle]
+convention = "google"
+ignore-decorators = ["typing.overload"]
+
+[lint.flake8-pytest-style]
+fixture-parentheses = true
+mark-parentheses = true
+parametrize-names-type = "tuple"
+parametrize-values-type = "tuple"
+parametrize-values-row-type = "tuple"
