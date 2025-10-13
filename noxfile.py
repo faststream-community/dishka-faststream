@@ -24,8 +24,6 @@ class IntegrationEnv:
 
 
 FASTSTREAM_ENVS = [
-    *[(IntegrationEnv("faststream", "050"), py_version) for py_version in PYTHON_VERSIONS_LESS_313],
-    *[(IntegrationEnv("faststream", "0529"), py_version) for py_version in PYTHON_VERSIONS_LESS_314],
     *[(IntegrationEnv("faststream", "060"), py_version) for py_version in PYTHON_VERSIONS],
     *[(IntegrationEnv("faststream", "latest"), py_version) for py_version in PYTHON_VERSIONS],
 ]

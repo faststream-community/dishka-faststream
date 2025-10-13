@@ -1,6 +1,5 @@
 from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
-from importlib.metadata import version
 from typing import Any, ParamSpec, TypeVar
 from unittest.mock import Mock
 
@@ -23,15 +22,6 @@ from .common import (
     AppProvider,
     RequestDep,
 )
-
-FASTSTREAM_VERSION = version("faststream")
-# `broker.request` was introduced in FastStream 0.5.19
-# `broker.publish(..., rpc=True)` was removed in FastStream 0.6.0rc0
-_, MINOR, PATCH = FASTSTREAM_VERSION.split(".")
-if MINOR == "5" and PATCH < "19":
-    pytestmark = pytest.mark.skip(
-        reason="These tests is not compatible with FastStream < 0.5.19",
-    )
 
 _ParamsP = ParamSpec("_ParamsP")
 _ReturnT = TypeVar("_ReturnT")
