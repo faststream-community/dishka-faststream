@@ -1,2 +1,2 @@
-faststream[nats]==0.6.0rc0
-fast-depends==3.0.0a12
+faststream[nats]==0.6.0
+fast-depends==3.0.1
