@@ -10,8 +10,6 @@ nox.options.stop_on_first_error = True
 
 DISHKA_VERSIONS = ["1.7.0", None]
 PYTHON_VERSIONS = ["3.10", "3.11", "3.12", "3.13", "3.14"]
-PYTHON_VERSIONS_LESS_314 = ["3.10", "3.11", "3.12", "3.13"]
-PYTHON_VERSIONS_LESS_313 = ["3.10", "3.11", "3.12"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -24,8 +22,6 @@ class IntegrationEnv:
 
 
 FASTSTREAM_ENVS = [
-    *[(IntegrationEnv("faststream", "050"), py_version) for py_version in PYTHON_VERSIONS_LESS_313],
-    *[(IntegrationEnv("faststream", "0529"), py_version) for py_version in PYTHON_VERSIONS_LESS_314],
     *[(IntegrationEnv("faststream", "060"), py_version) for py_version in PYTHON_VERSIONS],
     *[(IntegrationEnv("faststream", "latest"), py_version) for py_version in PYTHON_VERSIONS],
 ]
