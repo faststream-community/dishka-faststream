@@ -381,9 +381,6 @@ lint = [
     { name = "semgrep" },
     { name = "zizmor" },
 ]
-pre-commit = [
-    { name = "prek" },
-]
 test = [
     { name = "nox" },
     { name = "pytest" },
@@ -394,7 +391,7 @@ test = [
 [package.metadata]
 requires-dist = [
     { name = "dishka", specifier = ">=1.7,<2" },
-    { name = "faststream", specifier = ">=0.5,<0.7" },
+    { name = "faststream", specifier = ">=0.6,<0.7" },
 ]
 
 [package.metadata.requires-dev]
@@ -419,7 +416,6 @@ lint = [
     { name = "semgrep", specifier = ">=1.139.0" },
     { name = "zizmor", specifier = ">=1.14.2" },
 ]
-pre-commit = [{ name = "prek", specifier = ">=0.2.5" }]
 test = [
     { name = "nox", specifier = ">=2025.5.1" },
     { name = "pytest", specifier = ">=8.4.2" },

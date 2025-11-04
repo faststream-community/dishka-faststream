@@ -40,7 +40,7 @@ requires-python = ">=3.10"
 
 dependencies = [
     "dishka>=1.7,<2",
-    "faststream>=0.5,<0.7",
+    "faststream>=0.6,<0.7",
 ]
 
 [project.urls]
