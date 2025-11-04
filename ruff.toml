@@ -52,6 +52,8 @@ ignore = [
     "DOC402",
     "DOC501",
     "DOC502",
+
+    "COM812", # disable with format
 ]
 
 [lint.per-file-ignores]
