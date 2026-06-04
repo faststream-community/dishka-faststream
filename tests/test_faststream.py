@@ -44,6 +44,7 @@ async def dishka_app(
     setup_dishka(container, app=app, auto_inject=auto_inject)
 
     async with TestNatsBroker(broker) as br:
+        assert isinstance(br, NatsBroker)
         yield br
 
     await container.close()
@@ -98,6 +99,7 @@ async def test_autoinject_before_subscriber(app_provider: AppProvider) -> None:
     sub(get_with_request)
 
     async with TestNatsBroker(broker) as br:
+        assert isinstance(br, NatsBroker)
         msg = await br.request("", "test")
         assert await msg.decode() == "passed"
 
@@ -119,6 +121,7 @@ async def test_autoinject_after_subscriber(app_provider: AppProvider) -> None:
     setup_dishka(container, app=app, auto_inject=True)
 
     async with TestNatsBroker(broker) as br:
+        assert isinstance(br, NatsBroker)
         msg = await br.request("", "test")
         assert await msg.decode() == "passed"
 
@@ -139,6 +142,7 @@ async def test_faststream_with_broker(app_provider: AppProvider) -> None:
     setup_dishka(container, broker=broker, auto_inject=True)
 
     async with TestNatsBroker(broker) as br:
+        assert isinstance(br, NatsBroker)
         msg = await br.request("", "test")
         assert await msg.decode() == "passed"
 
