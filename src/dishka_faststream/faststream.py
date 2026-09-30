@@ -2,11 +2,12 @@ __all__ = (
     "FastStreamProvider",
     "inject",
     "setup_dishka",
+    "wrap_callback",
 )
 
 import warnings
 from collections.abc import AsyncIterator, Awaitable, Callable
-from inspect import Parameter
+from inspect import Parameter, iscoroutinefunction
 from typing import (
     Annotated,
     Any,
@@ -16,16 +17,23 @@ from typing import (
     TypeVar,
     cast,
     get_type_hints,
+    overload,
 )
 
-from dishka import AsyncContainer, Provider, Scope, from_context
+from dishka import AsyncContainer, Container, Provider, Scope, from_context
+from dishka.exception_base import DishkaError
 from dishka.integrations.base import InjectFunc, wrap_injection
 from faststream import BaseMiddleware, Context, FastStream
 from faststream._internal.basic_types import DecodedMessage
 from faststream._internal.broker import BrokerUsecase as BrokerType
-from faststream._internal.context import ContextRepo
 from faststream.asgi import AsgiFastStream
 from faststream.message import StreamMessage
+
+try:
+    from faststream.context import ContextRepo
+except ImportError:
+    # FastStream 0.6 does not expose the ContextRepo class through a public module.
+    from faststream._internal.context import ContextRepo
 
 _ReturnT = TypeVar("_ReturnT")
 _ParamsP = ParamSpec("_ParamsP")
@@ -60,6 +68,82 @@ else:
 
 class ApplicationLike(Protocol):
     broker: BrokerType[Any, Any]
+
+
+def _wrap_sync_callback(
+    callback: Callable[..., _ReturnT],
+    container: Container,
+    context: ContextRepo,
+) -> Callable[..., _ReturnT]:
+    return wrap_injection(
+        func=callback,
+        container_getter=lambda _args, _kwargs: container,
+        is_async=False,
+        scope=Scope.REQUEST,
+        provide_context=lambda _args, _kwargs: {ContextRepo: context},
+    )
+
+
+def _wrap_async_callback(
+    callback: Callable[..., _ReturnT],
+    container: AsyncContainer,
+    context: ContextRepo,
+) -> Callable[..., _ReturnT]:
+    return wrap_injection(
+        func=callback,
+        container_getter=lambda _args, _kwargs: container,
+        is_async=True,
+        scope=Scope.REQUEST,
+        provide_context=lambda _args, _kwargs: {ContextRepo: context},
+    )
+
+
+@overload
+def wrap_callback(
+    *,
+    callback: Callable[..., Awaitable[_ReturnT]],
+    container: AsyncContainer,
+    context: ContextRepo,
+) -> Callable[..., Awaitable[_ReturnT]]: ...
+
+
+@overload
+def wrap_callback(
+    *,
+    callback: Callable[..., _ReturnT],
+    container: Container,
+    context: ContextRepo,
+) -> Callable[..., _ReturnT]: ...
+
+
+def wrap_callback(
+    *,
+    callback: Callable[..., _ReturnT],
+    container: Container | AsyncContainer,
+    context: ContextRepo,
+) -> Callable[..., _ReturnT]:
+    """Inject callback dependencies in a new REQUEST scope.
+
+    Share the context with the broker and FastStream application.
+    StreamMessage context is not available in broker callbacks.
+    """
+    is_async_callback = iscoroutinefunction(callback)
+    if is_async_callback:
+        return _wrap_async_callback(
+            callback=callback,
+            container=cast("AsyncContainer", container),
+            context=context,
+        )
+
+    if isinstance(container, AsyncContainer):
+        msg = "Can't use async container in sync context"
+        raise DishkaError(msg)
+
+    return _wrap_sync_callback(
+        callback=callback,
+        container=container,
+        context=context,
+    )
 
 
 def setup_dishka(

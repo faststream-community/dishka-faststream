@@ -1,9 +1,11 @@
 from collections.abc import Iterable
+from dataclasses import dataclass
 from typing import NewType
 from unittest.mock import Mock
 
 from dishka import Provider, Scope, from_context, provide
 from dishka.entities.depends_marker import FromDishka
+from faststream import ContextRepo
 
 ContextDep = NewType("ContextDep", str)
 UserDep = NewType("UserDep", str)
@@ -19,6 +21,22 @@ WebSocketDep = NewType("WebSocketDep", str)
 WS_DEP_VALUE = WebSocketDep("WS")
 
 AppMock = NewType("AppMock", Mock)
+
+
+@dataclass
+class CallbackDependency:
+    context: ContextRepo
+    request: RequestDep
+
+
+class CallbackProvider(Provider):
+    @provide(scope=Scope.REQUEST)
+    def dependency(
+        self,
+        context: ContextRepo,
+        request: RequestDep,
+    ) -> CallbackDependency:
+        return CallbackDependency(context, request)
 
 
 class AppProvider(Provider):

@@ -4,15 +4,21 @@ from typing import Any, ParamSpec, TypeVar
 from unittest.mock import Mock
 
 import pytest
-from dishka import make_async_container
+from dishka import (
+    AsyncContainer,
+    Container,
+    make_async_container,
+)
+from dishka.exception_base import DishkaError
 from dishka.integrations.base import InjectFunc
-from faststream import FastStream
+from faststream import ContextRepo, FastStream
 from faststream.nats import NatsBroker, TestNatsBroker
 
 from dishka_faststream import (
     FromDishka,
     inject,
     setup_dishka,
+    wrap_callback,
 )
 
 from .common import (
@@ -20,6 +26,7 @@ from .common import (
     REQUEST_DEP_VALUE,
     AppDep,
     AppProvider,
+    CallbackDependency,
     RequestDep,
 )
 
@@ -173,3 +180,70 @@ async def test_custom_auto_inject(app_provider: AppProvider) -> None:
         app_provider.mock.assert_called_with(APP_DEP_VALUE)
         app_provider.app_released.assert_not_called()
     app_provider.app_released.assert_called()
+
+
+def sync_error_callback(
+    error: Exception,
+    dependency: FromDishka[CallbackDependency],
+) -> tuple[Exception, CallbackDependency]:
+    return error, dependency
+
+
+async def async_error_callback(
+    error: Exception,
+    dependency: FromDishka[CallbackDependency],
+) -> tuple[Exception, CallbackDependency]:
+    return error, dependency
+
+
+@pytest.mark.asyncio()
+async def test_async_callback_with_context(
+    app_provider: AppProvider,
+    async_callback_container: AsyncContainer,
+) -> None:
+    context = ContextRepo()
+    broker_error = ValueError("broker error")
+    wrapped = wrap_callback(
+        callback=async_error_callback,
+        container=async_callback_container,
+        context=context,
+    )
+
+    error, dependency = await wrapped(broker_error)
+
+    assert error is broker_error
+    assert dependency.context is context
+    assert dependency.request == REQUEST_DEP_VALUE
+    app_provider.request_released.assert_called_once()
+
+
+@pytest.mark.asyncio()
+async def test_sync_callback_rejects_async_container(
+    async_callback_container: AsyncContainer,
+) -> None:
+    with pytest.raises(DishkaError, match=r"^Can't use async container in sync context$"):
+        wrap_callback(
+            callback=sync_error_callback,  # type: ignore[arg-type]
+            container=async_callback_container,
+            context=ContextRepo(),
+        )
+
+
+def test_sync_callback_with_context(
+    app_provider: AppProvider,
+    callback_container: Container,
+) -> None:
+    context = ContextRepo()
+    broker_error = ValueError("broker error")
+    wrapped = wrap_callback(
+        callback=sync_error_callback,
+        container=callback_container,
+        context=context,
+    )
+
+    error, dependency = wrapped(broker_error)
+
+    assert error is broker_error
+    assert dependency.context is context
+    assert dependency.request == REQUEST_DEP_VALUE
+    app_provider.request_released.assert_called_once()

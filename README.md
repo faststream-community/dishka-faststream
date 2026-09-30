@@ -97,6 +97,44 @@ Or pass your own inject decorator
 setup_dishka(container=container, broker=broker, auto_inject=my_inject)
 ```
 
+### Broker event callbacks
+
+Broker callbacks run outside the subscriber middleware. Use `wrap_callback`
+to inject dependencies into a callback in a separate `REQUEST` scope.
+Use `AsyncContainer` for asynchronous callbacks and `Container` for synchronous
+callbacks. NATS client callbacks must be asynchronous.
+For example, to handle NATS client errors, register `ErrorHandler` in your
+provider with `Scope.REQUEST` and pass the wrapped callback to `NatsBroker`:
+
+```python
+from faststream import ContextRepo, FastStream
+from faststream.nats import NatsBroker
+from dishka_faststream import FromDishka, wrap_callback
+
+
+async def error_callback(
+    error: Exception,
+    error_handler: FromDishka[ErrorHandler],
+) -> None:
+    await error_handler.handle(error)
+
+
+context = ContextRepo()
+broker = NatsBroker(
+    context=context,
+    error_cb=wrap_callback(
+        callback=error_callback,
+        container=container,
+        context=context,
+    ),
+)
+app = FastStream(broker, context=context)
+```
+
+Share the same `ContextRepo` with the callback, broker, and FastStream application.
+Create the container with `FastStreamProvider()` if your dependencies use
+`ContextRepo`. `StreamMessage` context is not available in broker callbacks.
+
 ## FastStream - Litestar/FastAPI - dishka integration
 
 1. Running RabbitMQ
