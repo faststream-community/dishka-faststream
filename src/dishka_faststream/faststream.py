@@ -167,7 +167,7 @@ def inject(func: Callable[_ParamsP, _ReturnT]) -> Callable[_ParamsP, _ReturnT]:
 
 
 def _find_context_param(func: Callable[_ParamsP, _ReturnT]) -> str | None:
-    hints = get_type_hints(func)
+    hints = get_type_hints(func, include_extras=True)
     return next(
         (name for name, hint in hints.items() if hint is ContextRepo),
         None,
