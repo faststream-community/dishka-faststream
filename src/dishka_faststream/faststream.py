@@ -74,7 +74,7 @@ def wrap_callback(
     *,
     callback: Callable[..., Awaitable[_ReturnT]],
     container: AsyncContainer | Container,
-    context: ContextRepo,
+    context: ContextRepo | None = None,
 ) -> Callable[..., Awaitable[_ReturnT]]: ...
 
 
@@ -83,7 +83,7 @@ def wrap_callback(
     *,
     callback: Callable[..., _ReturnT],
     container: Container,
-    context: ContextRepo,
+    context: ContextRepo | None = None,
 ) -> Callable[..., _ReturnT]: ...
 
 
@@ -91,20 +91,24 @@ def wrap_callback(
     *,
     callback: Callable[..., _ReturnT],
     container: Container | AsyncContainer,
-    context: ContextRepo,
+    context: ContextRepo | None = None,
 ) -> Callable[..., _ReturnT]:
     """Inject callback dependencies in a new REQUEST scope.
 
-    Share the context with the broker and FastStream application.
+    If provided, share the context with the broker and FastStream application.
     StreamMessage context is not available in broker callbacks.
     """
+    provide_context = (
+        (lambda _args, _kwargs: {ContextRepo: context}) if context is not None else None
+    )
+
     if isinstance(container, AsyncContainer):
         return wrap_injection(
             func=callback,
             container_getter=lambda _args, _kwargs: container,
             is_async=True,
             scope=Scope.REQUEST,
-            provide_context=lambda _args, _kwargs: {ContextRepo: context},
+            provide_context=provide_context,
         )
 
     return wrap_injection(
@@ -112,7 +116,7 @@ def wrap_callback(
         container_getter=lambda _args, _kwargs: container,
         is_async=False,
         scope=Scope.REQUEST,
-        provide_context=lambda _args, _kwargs: {ContextRepo: context},
+        provide_context=provide_context,
     )
 
 

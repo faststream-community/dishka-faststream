@@ -188,6 +188,10 @@ def sync_error_callback(
     return error, dependency
 
 
+def sync_request_callback(request: FromDishka[RequestDep]) -> RequestDep:
+    return request
+
+
 async def async_error_callback(
     error: Exception,
     dependency: FromDishka[CallbackDependency],
@@ -216,6 +220,21 @@ async def test_async_callback_with_context(
     app_provider.request_released.assert_called_once()
 
 
+@pytest.mark.asyncio()
+async def test_async_callback_without_context(
+    app_provider: AppProvider,
+    async_callback_container: AsyncContainer,
+) -> None:
+    wrapped = wrap_callback(
+        callback=get_with_request,
+        container=async_callback_container,
+    )
+
+    assert await wrapped() == "passed"
+    app_provider.mock.assert_called_once_with(REQUEST_DEP_VALUE)
+    app_provider.request_released.assert_called_once()
+
+
 def test_sync_callback_with_context(
     app_provider: AppProvider,
     callback_container: Container,
@@ -233,4 +252,17 @@ def test_sync_callback_with_context(
     assert error is broker_error
     assert dependency.context is context
     assert dependency.request == REQUEST_DEP_VALUE
+    app_provider.request_released.assert_called_once()
+
+
+def test_sync_callback_without_context(
+    app_provider: AppProvider,
+    callback_container: Container,
+) -> None:
+    wrapped = wrap_callback(
+        callback=sync_request_callback,
+        container=callback_container,
+    )
+
+    assert wrapped() == REQUEST_DEP_VALUE
     app_provider.request_released.assert_called_once()

@@ -132,6 +132,7 @@ app = FastStream(broker, context=context)
 ```
 
 Share the same `ContextRepo` with the callback, broker, and FastStream application.
+You can omit `context` when the callback does not need `ContextRepo`.
 Create the container with `FastStreamProvider()` if your dependencies use
 `ContextRepo`. `StreamMessage` context is not available in broker callbacks.
 
