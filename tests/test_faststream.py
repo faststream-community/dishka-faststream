@@ -14,6 +14,7 @@ from faststream import ContextRepo, FastStream
 from faststream.nats import NatsBroker, TestNatsBroker
 
 from dishka_faststream import (
+    FastStreamProvider,
     FromDishka,
     inject,
     setup_dishka,
@@ -73,6 +74,26 @@ async def test_app_dependency(app_provider: AppProvider) -> None:
         app_provider.mock.assert_called_with(APP_DEP_VALUE)
         app_provider.app_released.assert_not_called()
     app_provider.app_released.assert_called()
+
+
+@pytest.mark.asyncio()
+async def test_injected_context_without_faststream_context_parameter() -> None:
+    broker = NatsBroker()
+    container = make_async_container(FastStreamProvider())
+
+    @broker.subscriber("test")
+    @inject
+    async def handler(context: FromDishka[ContextRepo]) -> str:
+        assert context is broker.context
+        return "passed"
+
+    setup_dishka(container, broker=broker)
+    try:
+        async with TestNatsBroker(broker):
+            message = await broker.request("hello", "test")
+            assert await message.decode() == "passed"
+    finally:
+        await container.close()
 
 
 async def get_with_request(
