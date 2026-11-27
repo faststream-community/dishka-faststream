@@ -2,7 +2,7 @@ name: Dependabot auto-merge
 
 # Use base-branch code only. Never check out or execute the PR in this job.
 on:
-  pull_request_target:
+  pull_request_target: # zizmor: ignore[dangerous-triggers] -- API-only job; no PR checkout, scripts or artifacts.
     branches: [main]
     types: [opened, reopened, synchronize, ready_for_review]
 
