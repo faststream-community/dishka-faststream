@@ -4,7 +4,7 @@
 [![Package version](https://img.shields.io/pypi/v/dishka-faststream?label=PyPI)](https://pypi.org/project/dishka-faststream)
 [![Supported Python versions](https://img.shields.io/pypi/pyversions/dishka-faststream.svg)](https://pypi.org/project/dishka-faststream)
 [![License](https://img.shields.io/github/license/faststream-community/dishka-faststream.svg)](https://github.com/faststream-community/dishka-faststream/blob/main/LICENSE)
-[![FastStream](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fag2ai%2Ffaststream%2Fmain%2Fdocs%2Fdocs%2Fassets%2Fimg%2Fshield.json)](https://faststream.ag2.ai)
+[![FastStream](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fag2ai%2Ffaststream%2Fmain%2Fdocs%2Fdocs%2Fen%2Fassets%2Fimg%2Fshield.json)](https://faststream.ag2.ai)
 
 Though it is not required, you can use *dishka-faststream* integration. It features:
 
