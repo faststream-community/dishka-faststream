@@ -15,27 +15,27 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
 
     - name: Install uv
-      uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v7
+      uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
 
     - uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4.0.0
       with:
         just-version: 1.43.0
 
-    - uses: j178/prek-action@cbc2f23eb5539cf20d82d1aabd0d0ecbcc56f4e3 # v2.0.2
+    - uses: j178/prek-action@7b101f8338a08d2bd6fdb3625e4e7692428763a3 # v3.1.1
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
 
     - name: Install uv
-      uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v7
+      uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
 
-    - uses: wntrblm/nox@97e345e6a26bb2c5aacff9cc4327bd4ac1b00ce6  # v2026.04.10
+    - uses: wntrblm/nox@afa3983bbac3143bab5c8406244327581f76a3d7 # v2026.10.20
     - run: nox

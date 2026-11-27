@@ -4,7 +4,7 @@
 [![Package version](https://img.shields.io/pypi/v/dishka-faststream?label=PyPI)](https://pypi.org/project/dishka-faststream)
 [![Supported Python versions](https://img.shields.io/pypi/pyversions/dishka-faststream.svg)](https://pypi.org/project/dishka-faststream)
 [![License](https://img.shields.io/github/license/faststream-community/dishka-faststream.svg)](https://github.com/faststream-community/dishka-faststream/blob/main/LICENSE)
-[![FastStream](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fag2ai%2Ffaststream%2Fmain%2Fdocs%2Fdocs%2Fassets%2Fimg%2Fshield.json)](https://faststream.ag2.ai)
+[![FastStream](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fag2ai%2Ffaststream%2Fmain%2Fdocs%2Fdocs%2Fen%2Fassets%2Fimg%2Fshield.json)](https://faststream.ag2.ai)
 
 Though it is not required, you can use *dishka-faststream* integration. It features:
 
@@ -96,6 +96,45 @@ Or pass your own inject decorator
 ```python
 setup_dishka(container=container, broker=broker, auto_inject=my_inject)
 ```
+
+### Broker event callbacks
+
+Broker callbacks run outside the subscriber middleware. Use `wrap_callback`
+to inject dependencies into a callback in a separate `REQUEST` scope.
+Use `AsyncContainer` or `Container` for asynchronous callbacks and `Container` for synchronous
+callbacks. NATS client callbacks must be asynchronous.
+For example, to handle NATS client errors, register `ErrorHandler` in your
+provider with `Scope.REQUEST` and pass the wrapped callback to `NatsBroker`:
+
+```python
+from faststream import ContextRepo, FastStream
+from faststream.nats import NatsBroker
+from dishka_faststream import FromDishka, wrap_callback
+
+
+async def error_callback(
+    error: Exception,
+    error_handler: FromDishka[ErrorHandler],
+) -> None:
+    await error_handler.handle(error)
+
+
+context = ContextRepo()
+broker = NatsBroker(
+    context=context,
+    error_cb=wrap_callback(
+        callback=error_callback,
+        container=container,
+        context=context,
+    ),
+)
+app = FastStream(broker, context=context)
+```
+
+Share the same `ContextRepo` with the callback, broker, and FastStream application.
+You can omit `context` when the callback does not need `ContextRepo`.
+Create the container with `FastStreamProvider()` if your dependencies use
+`ContextRepo`. `StreamMessage` context is not available in broker callbacks.
 
 ## FastStream - Litestar/FastAPI - dishka integration
 

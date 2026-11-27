@@ -2,6 +2,8 @@ version: 2
 updates:
   - package-ecosystem: github-actions
     directory: /
+    cooldown:
+      default-days: 7
     schedule:
       interval: weekly
     # https://til.simonwillison.net/github/dependabot-python-setup
@@ -14,6 +16,8 @@ updates:
     directory: /
     exclude-paths:
       - "requirements/**"
+    cooldown:
+      default-days: 7
     schedule:
       interval: weekly
     groups:
