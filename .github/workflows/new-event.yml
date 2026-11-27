@@ -17,6 +17,7 @@ permissions:
 jobs:
   notify:
     name: "Telegram notification"
+    environment: telegram-notifications
     if: github.event.pull_request.user.login != 'Lancetnik'
     runs-on: ubuntu-latest
     steps:
